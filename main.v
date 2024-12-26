@@ -2,13 +2,14 @@ module main
 
 import flag
 import os
+import geometry
 
 fn main() {
 	mut fp := flag.new_flag_parser(os.args)
 
-	fp.application('geo')
-	fp.version('0.0.1')
-	fp.description('A sample CLI application that prints geometric shapes to the console.')
+	fp.application(geometry.name)
+	fp.version(geometry.version)
+	fp.description(geometry.description)
 	fp.skip_executable()
 
 	shape := fp.string('shape', `p`, 'none', 'The shape to use for the geometry.').to_lower()
@@ -22,7 +23,35 @@ fn main() {
 		println('Unprocessed arguments:\n${additional_args.join_lines()}')
 	}
 
-	println(shape)
-	println(size)
-	println(symbol)
+	if size <= 0 {
+		println('Size parameter must be positive.')
+		exit(1)
+	}
+
+	if shape !in geometry.allowed_shapes && shape != 'none' {
+		println('Invalid shape: ${shape}')
+		println(fp.usage())
+		exit(1)
+	}
+
+	shape_kind := if shape == 'none' { get_shape_input() } else { geometry.shape_map[shape] }
+	shape_options := geometry.new_shape_options(shape_kind, size, symbol)
+	lines := geometry.generate_shape(shape_options)
+	println(lines.join_lines())
+}
+
+// get_shape_input continuously asks the user for a shape until the user enters a valid shape
+fn get_shape_input() geometry.GeometricShapeKind {
+	for true {
+		input_string := (os.input_opt('Enter a shape: ') or { 'none' }).to_lower()
+
+		if input_string == 'none' || input_string !in geometry.allowed_shapes {
+			println('Invalid shape: ${input_string}')
+			println('Available options are: ${geometry.allowed_shapes.join(', ')}')
+			continue
+		}
+
+		return geometry.shape_map[input_string]
+	}
+	return .left_triangle
 }
