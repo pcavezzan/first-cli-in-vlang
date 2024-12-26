@@ -14,6 +14,13 @@ pub struct ShapeOptions {
 	symbol rune = `*`
 }
 
+pub fn default_shape_options_with_size(size int) ShapeOptions {
+	return ShapeOptions{
+		kind: .left_triangle
+		size: size
+	}
+}
+
 pub fn new_shape_options(kind GeometricShapeKind, size int, symbol rune) ShapeOptions {
 	return ShapeOptions{
 		kind:   kind
